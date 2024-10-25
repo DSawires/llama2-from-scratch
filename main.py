@@ -1,4 +1,3 @@
-import deepspeed
 import sentencepiece as spm
 
 from arguments import get_args
@@ -15,8 +14,6 @@ def run_main():
       dataset = TextFileDataset(args['filepath'], tokenizer, args['max_seq_length'], pad_token_id=0)
       model_args = ModelArgs()
       model_args.vocab_size = tokenizer.vocab_size()
-      if args['deepspeed']:
-            deepspeed.init_distributed()
       train_dataloader, eval_dataloader = create_dataloaders(dataset, args['train_size'], args['batch_size'])
 
       model = Transformer(model_args)
