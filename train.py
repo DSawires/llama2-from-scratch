@@ -2,7 +2,6 @@
 import logging
 from typing import Dict
 
-import deepspeed
 import pandas as pd
 import torch
 from torch.optim import AdamW
@@ -62,7 +61,7 @@ def rate(step: int, model_size: int, warmup: int, factor: int = 1):
 
 def save_ds_checkpoint(step, epoch, model, ckpt_id, args, optimizer=None, lr_scheduler=None):
     """Save a model checkpoint."""
-    if args['deepspeed']:
+    if False:
         client_state = {'step': step, 'epoch': epoch}
         saved_path = model.save_checkpoint(args['save_dir'], ckpt_id, client_state=client_state)
         if saved_path is None:
@@ -89,7 +88,7 @@ def save_ds_checkpoint(step, epoch, model, ckpt_id, args, optimizer=None, lr_sch
 def load_checkpoint(model, args, optimizer=None, lr_scheduler=None):
     """Load a model checkpoint."""
 
-    if args['deepspeed']:
+    if False:
         # Load checkpoint using DeepSpeed
         checkpoint_name, client_state = model.load_checkpoint(args['load_dir'], args['ckpt_id'])
         if checkpoint_name is None:
@@ -140,7 +139,7 @@ def train(model: Transformer, train_config: TrainArgs, train_dataloader: DataLoa
                              model_size=model.args.dim,
                              warmup=train_config.warmup_steps,
                          ))
-    if args['deepspeed']:
+    if False:
         deepspeed.init_distributed()
         logging.info('Deepspeed is enabled.')
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
@@ -169,7 +168,7 @@ def train(model: Transformer, train_config: TrainArgs, train_dataloader: DataLoa
         for step, (X, Y) in enumerate(train_dataloader, start=start_step):
             X, Y = X.to(model.device), Y.to(model.device)
             logits, loss = model(X, 0, Y)
-            if args['deepspeed']:
+            if False:
                 model.backward(loss)
                 model.step()
             else:
