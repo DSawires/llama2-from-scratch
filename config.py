@@ -6,9 +6,9 @@ import torch
 
 @dataclass
 class ModelArgs:
-    dim: int = 4096
-    n_layers: int = 32
-    n_heads: int = 32  # nheads for query
+    dim: int = 100
+    n_layers: int = 10
+    n_heads: int = 10  # nheads for query
     n_kv_heads: Optional[int] = None  # nheads for key and V
     vocab_size: int = -1  # will be set when loading the tokenizer/
     multiple_of: int = 256

@@ -165,6 +165,7 @@ def train(model: Transformer, train_config: TrainArgs, train_dataloader: DataLoa
 
     for epoch in tqdm(range(start_epoch, args['n_epochs'])):
         model.train()
+        breakpoint()
         for step, (X, Y) in enumerate(train_dataloader, start=start_step):
             X, Y = X.to(model.device), Y.to(model.device)
             logits, loss = model(X, 0, Y)

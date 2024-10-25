@@ -122,20 +122,20 @@ def create_dataloaders(
     Returns:
         Tuple[DataLoader, DataLoader]: A tuple containing the data loaders for the training and evaluation datasets.
     """
-
+    dataset.lines = dataset.lines[:100]
+    breakpoint()
     train_dataset, eval_dataset = split_dataset(dataset, train_split_ratio)
-
 
     # DataLoaders with DistributedSampler
     train_dataloader = DataLoader(train_dataset,
                                   batch_size=batch_size,
-                                  num_workers=64,
+                                  num_workers=2,
                                   pin_memory=True,
                                   persistent_workers=True,
                                   collate_fn=llama_collate_fn,
                                   )
     eval_dataloader = DataLoader(eval_dataset, batch_size=batch_size,
-                                 num_workers=64,
+                                 num_workers=2,
                                  pin_memory=True,
                                  persistent_workers=True,
                                  collate_fn=llama_collate_fn,

@@ -15,14 +15,15 @@ def run_main():
       model_args = ModelArgs()
       model_args.vocab_size = tokenizer.vocab_size()
       train_dataloader, eval_dataloader = create_dataloaders(dataset, args['train_size'], args['batch_size'])
-
       model = Transformer(model_args)
       train(model=model,
             train_config=TrainArgs(),
             train_dataloader=train_dataloader,
             eval_dataloader=eval_dataloader,
             args=args)
+      
 
 
 if __name__ == '__main__':
       run_main()
+
