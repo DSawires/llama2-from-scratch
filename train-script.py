@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from datasets import load_dataset
 from sentencepiece import SentencePieceProcessor
 import numpy as np
@@ -10,73 +10,91 @@ import os
 from torch.optim import AdamW
 from torch.nn import functional as F
 
+class TextDataset(Dataset):
+    def __init__(self, texts, tokenizer, context_length):
+        self.tokenizer = tokenizer
+        self.context_length = context_length
+        
+        # Tokenize all texts and concatenate
+        tokens = []
+        for text in tqdm(texts, desc="Tokenizing texts"):
+            if isinstance(text, str) and text.strip():
+                text_tokens = self.tokenizer.EncodeAsIds(text)
+                tokens.extend(text_tokens)
+        
+        # Create sequences of context_length + 1 (input + target)
+        self.sequences = []
+        for i in range(0, len(tokens) - context_length):
+            sequence = tokens[i:i + context_length + 1]
+            if len(sequence) == context_length + 1:
+                self.sequences.append(sequence)
+    
+    def __len__(self):
+        return len(self.sequences)
+    
+    def __getitem__(self, idx):
+        sequence = self.sequences[idx]
+        return {
+            "input_ids": torch.tensor(sequence[:-1], dtype=torch.long),
+            "labels": torch.tensor(sequence[1:], dtype=torch.long)
+        }
+
 def create_dataloaders(batch_size, context_length, split_sizes=(0.8, 0.1, 0.1)):
     """Create train, validation, and test dataloaders from a HuggingFace dataset."""
-    # Load dataset (you can replace 'wikitext' with your preferred dataset)
+    # Load dataset
+    print("Loading dataset...")
     dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
     
     # Load the SentencePiece tokenizer
+    print("Loading tokenizer...")
     sp_model = SentencePieceProcessor()
     sp_model.Load("tokenizer.model")
     
-    def tokenize_function(examples):
-        # Tokenize all texts and concatenate them
-        tokenized = []
-        for text in examples["text"]:
-            if text.strip():  # Skip empty lines
-                tokens = sp_model.EncodeAsIds(text)
-                tokenized.extend(tokens)
-        return {"input_ids": tokenized}
-
-    # Tokenize the dataset
-    tokenized_datasets = dataset.map(
-        tokenize_function,
-        remove_columns=dataset["train"].column_names,
-        batched=True
+    # Create datasets
+    print("Creating train dataset...")
+    train_dataset = TextDataset(
+        dataset["train"]["text"],
+        sp_model,
+        context_length
     )
-
-    def group_texts(examples):
-        # Concatenate all texts and split them into chunks of context_length
-        concatenated = examples["input_ids"]
-        total_length = len(concatenated)
-        
-        # Drop the last incomplete chunk if necessary
-        total_length = (total_length // context_length) * context_length
-        
-        result = {
-            "input_ids": [concatenated[i:i + context_length] for i in range(0, total_length, context_length)]
-        }
-        
-        # Create targets (shifted input_ids)
-        result["labels"] = [ids[1:] + [0] for ids in result["input_ids"]]
-        result["input_ids"] = [ids[:-1] for ids in result["input_ids"]]
-        
-        return result
-
-    # Group texts into chunks of context_length
-    lm_datasets = tokenized_datasets.map(
-        group_texts,
-        batched=True
+    
+    print("Creating validation dataset...")
+    val_dataset = TextDataset(
+        dataset["validation"]["text"],
+        sp_model,
+        context_length
     )
-
-    # Convert to PyTorch tensors
-    lm_datasets.set_format(type="torch")
-
+    
+    print("Creating test dataset...")
+    test_dataset = TextDataset(
+        dataset["test"]["text"],
+        sp_model,
+        context_length
+    )
+    
+    print(f"Dataset sizes - Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}")
+    
     # Create dataloaders
     train_dataloader = DataLoader(
-        lm_datasets["train"],
+        train_dataset,
         batch_size=batch_size,
-        shuffle=True
+        shuffle=True,
+        num_workers=4,
+        pin_memory=True
     )
     
     val_dataloader = DataLoader(
-        lm_datasets["validation"],
-        batch_size=batch_size
+        val_dataset,
+        batch_size=batch_size,
+        num_workers=4,
+        pin_memory=True
     )
     
     test_dataloader = DataLoader(
-        lm_datasets["test"],
-        batch_size=batch_size
+        test_dataset,
+        batch_size=batch_size,
+        num_workers=4,
+        pin_memory=True
     )
 
     return train_dataloader, val_dataloader, test_dataloader
@@ -100,6 +118,7 @@ def train_epoch(model, dataloader, optimizer, scheduler, device):
         )
         
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)  # Add gradient clipping
         optimizer.step()
         if scheduler is not None:
             scheduler.step()
@@ -135,11 +154,13 @@ def main():
     
     # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
     
     # Load tokenizer and get vocab size
     sp_model = SentencePieceProcessor()
-    sp_model.Load("tokens.model")
+    sp_model.Load("tokenizer.model")
     vocab_size = sp_model.GetPieceSize()
+    print(f"Vocabulary size: {vocab_size}")
     
     # Model configuration
     args = ModelArgs(
@@ -157,24 +178,27 @@ def main():
     # Initialize model
     from transformer import Transformer
     model = Transformer(args).to(device)
+    print("Model initialized")
     
     # Create dataloaders
     train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
         batch_size=32,
-        context_length=args.max_seq_length
+        context_length=args.max_seq_length - 1  # -1 to account for the target token
     )
     
     # Initialize optimizer and scheduler
-    optimizer = AdamW(model.parameters(), lr=3e-4)
+    optimizer = AdamW(model.parameters(), lr=3e-4, weight_decay=0.1)
+    total_steps = len(train_dataloader) * 10  # 10 epochs
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
-        T_max=len(train_dataloader) * 10  # 10 epochs
+        T_max=total_steps
     )
     
     # Training loop
     best_val_loss = float('inf')
     num_epochs = 10
     
+    print("Starting training...")
     for epoch in range(num_epochs):
         print(f"\nEpoch {epoch + 1}/{num_epochs}")
         
@@ -188,13 +212,20 @@ def main():
         wandb.log({
             "train_loss": train_loss,
             "val_loss": val_loss,
-            "epoch": epoch
+            "epoch": epoch,
+            "learning_rate": scheduler.get_last_lr()[0]
         })
         
         # Save best model
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            torch.save(model.state_dict(), "best_model.pt")
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'scheduler_state_dict': scheduler.state_dict(),
+                'val_loss': val_loss,
+            }, "best_model.pt")
             print(f"Saved new best model with validation loss: {val_loss:.4f}")
         
         print(f"Train loss: {train_loss:.4f}")
