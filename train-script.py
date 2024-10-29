@@ -192,13 +192,13 @@ def main():
     
     # Model configuration
     args = ModelArgs(
-        dim=512,
-        n_layers=8,
-        n_heads=8,
-        n_kv_heads=8,
+        dim=3072,
+        n_layers=32,
+        n_heads=32,
+        n_kv_heads=32,
         vocab_size=vocab_size,
         multiple_of=32,
-        max_seq_length=512,  # Reduced sequence length
+        max_seq_length=4096,  # Reduced sequence length
         mode='train',
         device=device
     )
@@ -210,7 +210,7 @@ def main():
     
     # Create dataloaders
     train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
-        batch_size=16,  # Reduced batch size
+        batch_size=4096,  # Reduced batch size
         context_length=args.max_seq_length - 1
     )
     
