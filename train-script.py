@@ -1,279 +1,211 @@
-import os
-import time
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 from datasets import load_dataset
-from tokenizers import Tokenizer
+from sentencepiece import SentencePieceProcessor
+import numpy as np
 from tqdm import tqdm
-import datetime
+from config import ModelArgs
+import wandb
+import os
+from torch.optim import AdamW
+from torch.nn import functional as F
 
-class TrainingLogger:
-    def __init__(self):
-        self.start_time = time.time()
-        self.best_val_loss = float('inf')
-        
-    def log_epoch_start(self, epoch, total_epochs):
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print("\n" + "="*80)
-        print(f"Epoch {epoch}/{total_epochs} - Started at {current_time}")
-        print("-"*80)
-        
-    def log_training_step(self, epoch, batch_idx, total_batches, loss, lr):
-        elapsed = time.time() - self.start_time
-        hours = int(elapsed // 3600)
-        minutes = int((elapsed % 3600) // 60)
-        
-        print(f"\rBatch [{batch_idx}/{total_batches}] "
-              f"| Loss: {loss:.4f} "
-              f"| LR: {lr:.2e} "
-              f"| Time: {hours:02d}:{minutes:02d} ", end="")
-              
-    def log_epoch_metrics(self, epoch, train_loss, val_loss, val_perplexity):
-        is_best = val_loss < self.best_val_loss
-        self.best_val_loss = min(val_loss, self.best_val_loss)
-        
-        print("\n" + "-"*80)
-        print(f"Epoch {epoch} Summary:")
-        print(f"  Training Loss:     {train_loss:.4f}")
-        print(f"  Validation Loss:   {val_loss:.4f}")
-        print(f"  Val Perplexity:    {val_perplexity:.2f}")
-        print(f"  Best Val Loss:     {self.best_val_loss:.4f}")
-        if is_best:
-            print("  📈 New best validation loss achieved!")
-        print("-"*80)
-
-def load_tokenizer(tokenizer_path):
-    """Load the tokenizer from the specified path"""
-    if not os.path.exists(tokenizer_path):
-        raise FileNotFoundError(f"Tokenizer file not found at {tokenizer_path}")
-    return Tokenizer.from_file(tokenizer_path)
-
-def create_dataloaders(dataset_name, tokenizer, batch_size, seq_length, split_ratio=0.9):
-    """Create training and validation dataloaders from a HuggingFace dataset"""
-    print(f"\nLoading dataset: {dataset_name}")
-    dataset = load_dataset(dataset_name)
+def create_dataloaders(batch_size, context_length, split_sizes=(0.8, 0.1, 0.1)):
+    """Create train, validation, and test dataloaders from a HuggingFace dataset."""
+    # Load dataset (you can replace 'wikitext' with your preferred dataset)
+    dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
     
-    # If dataset only has 'train' split, create validation split
-    if 'validation' not in dataset:
-        print("Creating validation split...")
-        dataset = dataset['train'].train_test_split(train_size=split_ratio)
-        train_dataset = dataset['train']
-        val_dataset = dataset['test']
-    else:
-        train_dataset = dataset['train']
-        val_dataset = dataset['validation']
+    # Load the SentencePiece tokenizer
+    sp_model = SentencePieceProcessor()
+    sp_model.Load("tokenizer.model")
     
-    print(f"Training samples: {len(train_dataset)}")
-    print(f"Validation samples: {len(val_dataset)}")
-
     def tokenize_function(examples):
-        texts = examples['text']
-        tokenized = [tokenizer.encode(text).ids for text in texts]
-        return {'input_ids': tokenized}
+        # Tokenize all texts and concatenate them
+        tokenized = []
+        for text in examples["text"]:
+            if text.strip():  # Skip empty lines
+                tokens = sp_model.EncodeAsIds(text)
+                tokenized.extend(tokens)
+        return {"input_ids": tokenized}
 
-    print("\nTokenizing datasets...")
-    train_tokenized = train_dataset.map(
+    # Tokenize the dataset
+    tokenized_datasets = dataset.map(
         tokenize_function,
-        remove_columns=train_dataset.column_names,
-        batched=True,
-        desc="Tokenizing training data"
-    )
-    val_tokenized = val_dataset.map(
-        tokenize_function,
-        remove_columns=val_dataset.column_names,
-        batched=True,
-        desc="Tokenizing validation data"
+        remove_columns=dataset["train"].column_names,
+        batched=True
     )
 
-    def create_sequences(examples):
-        concatenated = []
-        for sequence in examples['input_ids']:
-            concatenated.extend(sequence)
+    def group_texts(examples):
+        # Concatenate all texts and split them into chunks of context_length
+        concatenated = examples["input_ids"]
+        total_length = len(concatenated)
         
-        sequences = [concatenated[i:i + seq_length + 1] 
-                    for i in range(0, len(concatenated) - seq_length, seq_length)]
+        # Drop the last incomplete chunk if necessary
+        total_length = (total_length // context_length) * context_length
         
         result = {
-            'input_ids': [seq[:-1] for seq in sequences],
-            'labels': [seq[1:] for seq in sequences]
+            "input_ids": [concatenated[i:i + context_length] for i in range(0, total_length, context_length)]
         }
+        
+        # Create targets (shifted input_ids)
+        result["labels"] = [ids[1:] + [0] for ids in result["input_ids"]]
+        result["input_ids"] = [ids[:-1] for ids in result["input_ids"]]
+        
         return result
 
-    print("\nCreating sequences...")
-    train_sequences = train_tokenized.map(
-        create_sequences,
-        batched=True,
-        remove_columns=train_tokenized.column_names,
-        desc="Processing training sequences"
-    )
-    val_sequences = val_tokenized.map(
-        create_sequences,
-        batched=True,
-        remove_columns=val_tokenized.column_names,
-        desc="Processing validation sequences"
+    # Group texts into chunks of context_length
+    lm_datasets = tokenized_datasets.map(
+        group_texts,
+        batched=True
     )
 
-    print("\nCreating dataloaders...")
-    train_loader = DataLoader(
-        train_sequences,
+    # Convert to PyTorch tensors
+    lm_datasets.set_format(type="torch")
+
+    # Create dataloaders
+    train_dataloader = DataLoader(
+        lm_datasets["train"],
         batch_size=batch_size,
-        shuffle=True,
-        num_workers=4
+        shuffle=True
     )
-    val_loader = DataLoader(
-        val_sequences,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=4
+    
+    val_dataloader = DataLoader(
+        lm_datasets["validation"],
+        batch_size=batch_size
+    )
+    
+    test_dataloader = DataLoader(
+        lm_datasets["test"],
+        batch_size=batch_size
     )
 
-    return train_loader, val_loader
+    return train_dataloader, val_dataloader, test_dataloader
 
-def train_epoch(model, train_loader, optimizer, device, logger, epoch, total_epochs):
-    """Train for one epoch"""
+def train_epoch(model, dataloader, optimizer, scheduler, device):
+    """Train for one epoch."""
     model.train()
     total_loss = 0
     
-    logger.log_epoch_start(epoch, total_epochs)
-    
-    for batch_idx, batch in enumerate(train_loader):
-        input_ids = batch['input_ids'].to(device)
-        labels = batch['labels'].to(device)
+    progress_bar = tqdm(dataloader, desc="Training")
+    for batch in progress_bar:
+        input_ids = batch["input_ids"].to(device)
+        labels = batch["labels"].to(device)
         
         optimizer.zero_grad()
-        outputs, loss = model(input_ids, start_pos=0, targets=labels)
+        
+        outputs, loss = model(
+            tokens=input_ids,
+            targets=labels,
+            start_pos=0
+        )
         
         loss.backward()
         optimizer.step()
-        
+        if scheduler is not None:
+            scheduler.step()
+            
         total_loss += loss.item()
+        progress_bar.set_postfix({"loss": loss.item()})
         
-        # Log progress
-        if batch_idx % 10 == 0:  # Log every 10 batches
-            current_lr = optimizer.param_groups[0]['lr']
-            logger.log_training_step(
-                epoch, batch_idx, len(train_loader),
-                loss.item(), current_lr
-            )
-    
-    return total_loss / len(train_loader)
+    return total_loss / len(dataloader)
 
-def validate(model, val_loader, device):
-    """Evaluate the model on the validation set"""
+def validate(model, dataloader, device):
+    """Validate the model."""
     model.eval()
     total_loss = 0
     
-    print("\nRunning validation...")
     with torch.no_grad():
-        for batch in tqdm(val_loader, desc="Validating"):
-            input_ids = batch['input_ids'].to(device)
-            labels = batch['labels'].to(device)
+        for batch in tqdm(dataloader, desc="Validating"):
+            input_ids = batch["input_ids"].to(device)
+            labels = batch["labels"].to(device)
             
-            outputs, loss = model(input_ids, start_pos=0, targets=labels)
+            outputs, loss = model(
+                tokens=input_ids,
+                targets=labels,
+                start_pos=0
+            )
+            
             total_loss += loss.item()
-    
-    avg_loss = total_loss / len(val_loader)
-    perplexity = torch.exp(torch.tensor(avg_loss)).item()
-    
-    return avg_loss, perplexity
+            
+    return total_loss / len(dataloader)
 
 def main():
-    # Print system information
-    print("\n" + "="*80)
-    print("TRAINING SETUP")
-    print("="*80)
+    # Initialize wandb
+    wandb.init(project="transformer-training")
     
-    # Training parameters
+    # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Device: {device}")
-    if device.type == 'cuda':
-        print(f"GPU: {torch.cuda.get_device_name(0)}")
     
-    epochs = 10
-    batch_size = 32
-    learning_rate = 3e-4
-    seq_length = 128
-    dataset_name = "wikitext"
-    tokenizer_path = "tokens.model"
+    # Load tokenizer and get vocab size
+    sp_model = SentencePieceProcessor()
+    sp_model.Load("tokens.model")
+    vocab_size = sp_model.GetPieceSize()
     
-    print(f"\nTraining Parameters:")
-    print(f"Epochs: {epochs}")
-    print(f"Batch Size: {batch_size}")
-    print(f"Learning Rate: {learning_rate}")
-    print(f"Sequence Length: {seq_length}")
-    print(f"Dataset: {dataset_name}")
-    
-    # Load tokenizer
-    print("\nLoading tokenizer...")
-    tokenizer = load_tokenizer(tokenizer_path)
-    vocab_size = tokenizer.get_vocab_size()
-    print(f"Vocabulary size: {vocab_size:,}")
-    
-    # Initialize model arguments
-    print("\nInitializing model...")
-    model_args = ModelArgs(
+    # Model configuration
+    args = ModelArgs(
         dim=512,
         n_layers=8,
         n_heads=8,
+        n_kv_heads=8,
         vocab_size=vocab_size,
-        max_seq_length=seq_length,
-        batch_size=batch_size,
-        device=device,
-        mode='train'
+        multiple_of=32,
+        max_seq_length=1024,
+        mode='train',
+        device=device
     )
     
     # Initialize model
     from transformer import Transformer
-    model = Transformer(model_args).to(device)
-    print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
+    model = Transformer(args).to(device)
     
     # Create dataloaders
-    train_loader, val_loader = create_dataloaders(
-        dataset_name,
-        tokenizer,
-        batch_size,
-        seq_length
+    train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
+        batch_size=32,
+        context_length=args.max_seq_length
     )
     
-    # Initialize optimizer
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
-    
-    # Initialize logger
-    logger = TrainingLogger()
-    
-    print("\n" + "="*80)
-    print("STARTING TRAINING")
-    print("="*80)
+    # Initialize optimizer and scheduler
+    optimizer = AdamW(model.parameters(), lr=3e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=len(train_dataloader) * 10  # 10 epochs
+    )
     
     # Training loop
-    for epoch in range(1, epochs + 1):
+    best_val_loss = float('inf')
+    num_epochs = 10
+    
+    for epoch in range(num_epochs):
+        print(f"\nEpoch {epoch + 1}/{num_epochs}")
+        
         # Train
-        train_loss = train_epoch(model, train_loader, optimizer, device, logger, epoch, epochs)
+        train_loss = train_epoch(model, train_dataloader, optimizer, scheduler, device)
         
         # Validate
-        val_loss, val_perplexity = validate(model, val_loader, device)
+        val_loss = validate(model, val_dataloader, device)
         
         # Log metrics
-        logger.log_epoch_metrics(epoch, train_loss, val_loss, val_perplexity)
+        wandb.log({
+            "train_loss": train_loss,
+            "val_loss": val_loss,
+            "epoch": epoch
+        })
         
-        # Save checkpoint if best validation loss
-        if val_loss < logger.best_val_loss:
-            print("\nSaving checkpoint...")
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'train_loss': train_loss,
-                'val_loss': val_loss,
-            }, 'best_model.pt')
+        # Save best model
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            torch.save(model.state_dict(), "best_model.pt")
+            print(f"Saved new best model with validation loss: {val_loss:.4f}")
+        
+        print(f"Train loss: {train_loss:.4f}")
+        print(f"Validation loss: {val_loss:.4f}")
     
-    print("\n" + "="*80)
-    print("TRAINING COMPLETED")
-    print("="*80)
-    print(f"Best validation loss: {logger.best_val_loss:.4f}")
-    print(f"Model saved as: best_model.pt")
-    print("="*80)
+    # Test final model
+    test_loss = validate(model, test_dataloader, device)
+    print(f"\nFinal test loss: {test_loss:.4f}")
+    wandb.log({"test_loss": test_loss})
+    
+    wandb.finish()
 
 if __name__ == "__main__":
     main()
