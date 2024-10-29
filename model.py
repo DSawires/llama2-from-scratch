@@ -356,6 +356,8 @@ class Transformer(nn.Module):
         self.vocab_size = args.vocab_size
         self.n_layers = args.n_layers
         self.tok_embeddings = nn.Embedding(args.vocab_size, args.dim)
+        self.device = args.device
+        self.to('cuda')
 
         self.layers = nn.ModuleList()
         for _ in range(args.n_layers):
