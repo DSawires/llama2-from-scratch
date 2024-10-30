@@ -1,0 +1,42 @@
+Using device: cuda
+Vocabulary size: 32000
+Model initialized
+Effective batch size: 128
+Loading dataset...
+Loading tokenizer...
+Creating datasets...
+Starting training...
+
+Epoch 1/10
+Training: 15it [00:28,  1.89s/it, loss=10.6, avg_loss=169, lr=0.0003]
+Traceback (most recent call last):
+  File "/home/user/llama2-from-scratch/train-script.py", line 290, in <module>
+    main()
+  File "/home/user/llama2-from-scratch/train-script.py", line 244, in main
+    train_loss = train_epoch(
+                 ^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/train-script.py", line 112, in train_epoch
+    scaler.step(optimizer)
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/cuda/amp/grad_scaler.py", line 416, in step
+    retval = self._maybe_opt_step(optimizer, optimizer_state, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/cuda/amp/grad_scaler.py", line 315, in _maybe_opt_step
+    retval = optimizer.step(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/optim/lr_scheduler.py", line 68, in wrapper
+    return wrapped(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/optim/optimizer.py", line 373, in wrapper
+    out = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/optim/optimizer.py", line 76, in _use_grad
+    ret = func(self, *args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/optim/adamw.py", line 184, in step
+    adamw(
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/optim/adamw.py", line 335, in adamw
+    func(
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/optim/adamw.py", line 599, in _multi_tensor_adamw
+    exp_avg_sq_sqrt = torch._foreach_sqrt(device_exp_avg_sqs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 96.00 MiB. GPU 0 has a total capacty of 79.33 GiB of which 62.00 MiB is free. Including non-PyTorch memory, this process has 79.26 GiB memory in use. Of the allocated memory 68.60 GiB is allocated by PyTorch, and 10.16 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

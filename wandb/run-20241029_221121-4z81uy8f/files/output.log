@@ -1,0 +1,22 @@
+Using device: cuda
+Vocabulary size: 32000
+Model initialized
+Loading dataset...
+Loading tokenizer...
+Creating datasets...
+Starting training...
+
+Epoch 1/10
+Training: 372it [02:01,  3.06it/s, loss=0.618, avg_loss=1.95, lr=0.000299]
+Traceback (most recent call last):
+  File "/home/user/llama2-from-scratch/train-script.py", line 267, in <module>
+    main()
+  File "/home/user/llama2-from-scratch/train-script.py", line 221, in main
+    train_loss = train_epoch(
+                 ^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/train-script.py", line 107, in train_epoch
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/utils/clip_grad.py", line 55, in clip_grad_norm_
+    norms.extend(torch._foreach_norm(grads, norm_type))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

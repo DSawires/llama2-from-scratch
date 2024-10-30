@@ -1,0 +1,38 @@
+Using device: cuda
+Vocabulary size: 32000
+Model initialized
+Loading dataset...
+Loading tokenizer...
+Creating datasets...
+Starting training...
+
+Epoch 1/10
+Training: 159it [03:51,  1.46s/it, loss=0.29, avg_loss=2.39, lr=0.0003] 
+Traceback (most recent call last):
+  File "/home/user/llama2-from-scratch/train-script.py", line 267, in <module>
+    main()
+  File "/home/user/llama2-from-scratch/train-script.py", line 221, in main
+    train_loss = train_epoch(
+                 ^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/train-script.py", line 100, in train_epoch
+    outputs, loss = model(
+                    ^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/model.py", line 389, in forward
+    output = self.output(h).float()
+             ^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/linear.py", line 114, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

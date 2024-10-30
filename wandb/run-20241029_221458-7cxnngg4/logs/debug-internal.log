@@ -1,0 +1,16 @@
+{"time":"2024-10-29T22:14:58.296983719Z","level":"INFO","msg":"using version","core version":"0.18.5"}
+{"time":"2024-10-29T22:14:58.297025903Z","level":"INFO","msg":"created symlink","path":"/home/user/llama2-from-scratch/wandb/run-20241029_221458-7cxnngg4/logs/debug-core.log"}
+{"time":"2024-10-29T22:14:58.400706699Z","level":"INFO","msg":"created new stream","id":"7cxnngg4"}
+{"time":"2024-10-29T22:14:58.400767321Z","level":"INFO","msg":"stream: started","id":"7cxnngg4"}
+{"time":"2024-10-29T22:14:58.402149058Z","level":"INFO","msg":"handler: started","stream_id":{"value":"7cxnngg4"}}
+{"time":"2024-10-29T22:14:58.402371711Z","level":"INFO","msg":"sender: started","stream_id":"7cxnngg4"}
+{"time":"2024-10-29T22:14:58.402445184Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"7cxnngg4"}}
+{"time":"2024-10-29T22:14:58.731558539Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-29T22:16:22.467614711Z","level":"INFO","msg":"stream: closing","id":"7cxnngg4"}
+{"time":"2024-10-29T22:16:22.467656057Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-29T22:16:22.468325414Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-29T22:16:23.511296215Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-29T22:16:23.72218731Z","level":"INFO","msg":"handler: closed","stream_id":{"value":"7cxnngg4"}}
+{"time":"2024-10-29T22:16:23.722248211Z","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"7cxnngg4"}}
+{"time":"2024-10-29T22:16:23.722351017Z","level":"INFO","msg":"sender: closed","stream_id":"7cxnngg4"}
+{"time":"2024-10-29T22:16:23.722386776Z","level":"INFO","msg":"stream: closed","id":"7cxnngg4"}

@@ -1,0 +1,32 @@
+{
+  "os":  "Linux-5.4.0-174-generic-x86_64-with-glibc2.31",
+  "python":  "3.11.6",
+  "startedAt":  "2024-10-29T20:10:35.685155Z",
+  "program":  "/home/user/llama2-from-scratch/train-script.py",
+  "codePath":  "train-script.py",
+  "git":  {
+    "remote":  "git@github.com:DSawires/llama2-from-scratch.git",
+    "commit":  "a24a5631584d636fe319391047d9c1caa4dba820"
+  },
+  "email":  "davidashraf@gmail.com",
+  "root":  "/home/user/llama2-from-scratch",
+  "host":  "4fda9bf2-7514-4db4-b09a-485f9cd576c7",
+  "username":  "user",
+  "executable":  "/home/user/mambaforge/envs/tensorml/bin/python",
+  "codePathLocal":  "train-script.py",
+  "cpu_count":  1,
+  "cpu_count_logical":  2,
+  "disk":  {
+    "/":  {
+      "total":  "62241562624",
+      "used":  "36934471680"
+    }
+  },
+  "memory":  {
+    "total":  "33661280256"
+  },
+  "cpu":  {
+    "count":  1,
+    "countLogical":  2
+  }
+}

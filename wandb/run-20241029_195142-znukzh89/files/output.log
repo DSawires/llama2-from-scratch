@@ -1,0 +1,4 @@
+Using device: cuda
+Vocabulary size: 32000
+/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/cuda/__init__.py:611: UserWarning: Can't initialize NVML
+  warnings.warn("Can't initialize NVML")

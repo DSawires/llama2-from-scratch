@@ -1,0 +1,56 @@
+Using device: cuda
+Vocabulary size: 32000
+Model initialized
+Loading dataset...
+Loading tokenizer...
+Creating datasets...
+Starting training...
+
+Epoch 1/10
+Training: 0it [00:02, ?it/s]
+Traceback (most recent call last):
+  File "/home/user/llama2-from-scratch/train-script.py", line 267, in <module>
+    main()
+  File "/home/user/llama2-from-scratch/train-script.py", line 221, in main
+    train_loss = train_epoch(
+                 ^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/train-script.py", line 100, in train_epoch
+    outputs, loss = model(
+                    ^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/model.py", line 386, in forward
+    h = layer(h, start_pos, freqs_complex)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/model.py", line 346, in forward
+    out = h + self.feed_forward(self.ffn_norm(h))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/model.py", line 286, in forward
+    x_v = self.w3(x)
+          ^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/linear.py", line 114, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1024.00 MiB. GPU 0 has a total capacty of 79.33 GiB of which 274.00 MiB is free. Including non-PyTorch memory, this process has 79.05 GiB memory in use. Of the allocated memory 77.05 GiB is allocated by PyTorch, and 1.51 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

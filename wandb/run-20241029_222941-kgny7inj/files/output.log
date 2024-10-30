@@ -1,0 +1,47 @@
+Using device: cuda
+Vocabulary size: 32000
+Model initialized
+Loading dataset...
+Loading tokenizer...
+Creating datasets...
+Starting training...
+
+Epoch 1/10
+Training: 64it [01:47,  1.69s/it, loss=1.56, avg_loss=4.51, lr=0.0003]
+Traceback (most recent call last):
+  File "/home/user/llama2-from-scratch/train-script.py", line 267, in <module>
+    main()
+  File "/home/user/llama2-from-scratch/train-script.py", line 221, in main
+    train_loss = train_epoch(
+                 ^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/train-script.py", line 100, in train_epoch
+    outputs, loss = model(
+                    ^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/model.py", line 386, in forward
+    h = layer(h, start_pos, freqs_complex)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/model.py", line 345, in forward
+    h = x + self.attention(self.attention_norm(x), start_pos, m_theta_complex)
+                           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/mambaforge/envs/tensorml/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/model.py", line 136, in forward
+    return self.weight * self._norm(x.float()).type_as(x)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

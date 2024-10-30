@@ -1,0 +1,43 @@
+{
+  "os":  "Linux-5.4.0-198-generic-x86_64-with-glibc2.31",
+  "python":  "3.11.6",
+  "startedAt":  "2024-10-29T20:27:18.719675Z",
+  "program":  "/home/user/llama2-from-scratch/train-script.py",
+  "codePath":  "train-script.py",
+  "git":  {
+    "remote":  "git@github.com:DSawires/llama2-from-scratch.git",
+    "commit":  "a24a5631584d636fe319391047d9c1caa4dba820"
+  },
+  "email":  "davidashraf@gmail.com",
+  "root":  "/home/user/llama2-from-scratch",
+  "host":  "4fda9bf2-7514-4db4-b09a-485f9cd576c7",
+  "username":  "user",
+  "executable":  "/home/user/mambaforge/envs/tensorml/bin/python",
+  "codePathLocal":  "train-script.py",
+  "cpu_count":  1,
+  "cpu_count_logical":  2,
+  "gpu":  "NVIDIA A100-SXM4-80GB",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "62241562624",
+      "used":  "36905857024"
+    }
+  },
+  "memory":  {
+    "total":  "33661263872"
+  },
+  "cpu":  {
+    "count":  1,
+    "countLogical":  2
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA A100-SXM4-80GB",
+      "memoryTotal":  "85899345920",
+      "cudaCores":  6912,
+      "architecture":  "Ampere"
+    }
+  ],
+  "cudaVersion":  "12.2"
+}

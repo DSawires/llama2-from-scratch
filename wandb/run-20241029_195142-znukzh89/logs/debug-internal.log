@@ -1,0 +1,8 @@
+{"time":"2024-10-29T19:51:42.955888243Z","level":"INFO","msg":"using version","core version":"0.18.5"}
+{"time":"2024-10-29T19:51:42.955913386Z","level":"INFO","msg":"created symlink","path":"/home/user/llama2-from-scratch/wandb/run-20241029_195142-znukzh89/logs/debug-core.log"}
+{"time":"2024-10-29T19:51:43.062778288Z","level":"INFO","msg":"created new stream","id":"znukzh89"}
+{"time":"2024-10-29T19:51:43.062830809Z","level":"INFO","msg":"stream: started","id":"znukzh89"}
+{"time":"2024-10-29T19:51:43.065202065Z","level":"INFO","msg":"handler: started","stream_id":{"value":"znukzh89"}}
+{"time":"2024-10-29T19:51:43.065277214Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"znukzh89"}}
+{"time":"2024-10-29T19:51:43.066403616Z","level":"INFO","msg":"sender: started","stream_id":"znukzh89"}
+{"time":"2024-10-29T19:51:43.528035513Z","level":"INFO","msg":"Starting system monitor"}

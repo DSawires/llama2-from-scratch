@@ -1,0 +1,16 @@
+{"time":"2024-10-29T22:35:21.506921513Z","level":"INFO","msg":"using version","core version":"0.18.5"}
+{"time":"2024-10-29T22:35:21.506950846Z","level":"INFO","msg":"created symlink","path":"/home/user/llama2-from-scratch/wandb/run-20241029_223521-pv972wig/logs/debug-core.log"}
+{"time":"2024-10-29T22:35:21.614526196Z","level":"INFO","msg":"created new stream","id":"pv972wig"}
+{"time":"2024-10-29T22:35:21.614600787Z","level":"INFO","msg":"stream: started","id":"pv972wig"}
+{"time":"2024-10-29T22:35:21.615327979Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"pv972wig"}}
+{"time":"2024-10-29T22:35:21.615695627Z","level":"INFO","msg":"handler: started","stream_id":{"value":"pv972wig"}}
+{"time":"2024-10-29T22:35:21.615750662Z","level":"INFO","msg":"sender: started","stream_id":"pv972wig"}
+{"time":"2024-10-29T22:35:22.094867835Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-29T22:35:36.385891759Z","level":"INFO","msg":"stream: closing","id":"pv972wig"}
+{"time":"2024-10-29T22:35:36.385933385Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-29T22:35:36.386653872Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-29T22:35:37.490701963Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-29T22:35:37.685043951Z","level":"INFO","msg":"handler: closed","stream_id":{"value":"pv972wig"}}
+{"time":"2024-10-29T22:35:37.685110999Z","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"pv972wig"}}
+{"time":"2024-10-29T22:35:37.685413274Z","level":"INFO","msg":"sender: closed","stream_id":"pv972wig"}
+{"time":"2024-10-29T22:35:37.685758013Z","level":"INFO","msg":"stream: closed","id":"pv972wig"}

@@ -44,7 +44,7 @@ class StreamingTextDataset(IterableDataset):
 def create_dataloaders(batch_size, context_length):
     """Create train, validation, and test dataloaders from a HuggingFace dataset."""
     print("Loading dataset...")
-    dataset = load_dataset("wikitext", "wikitext-2-raw-v1")
+    dataset = load_dataset("roneneldan/TinyStories")
     
     print("Loading tokenizer...")
     sp_model = SentencePieceProcessor()
@@ -64,17 +64,11 @@ def create_dataloaders(batch_size, context_length):
         context_length
     )
     
-    test_dataset = StreamingTextDataset(
-        dataset["test"]["text"],
-        sp_model,
-        context_length
-    )
-    
     # Create dataloaders with prefetch factor
     train_dataloader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        num_workers=2,  # Reduced number of workers
+        num_workers=2,
         pin_memory=True,
         prefetch_factor=2
     )
@@ -86,16 +80,8 @@ def create_dataloaders(batch_size, context_length):
         pin_memory=True,
         prefetch_factor=2
     )
-    
-    test_dataloader = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        num_workers=2,
-        pin_memory=True,
-        prefetch_factor=2
-    )
 
-    return train_dataloader, val_dataloader, test_dataloader
+    return train_dataloader, val_dataloader
 
 def train_epoch(model, dataloader, optimizer, scheduler, device, max_steps=None):
     """Train for one epoch or max_steps."""
@@ -192,13 +178,13 @@ def main():
     
     # Model configuration
     args = ModelArgs(
-        dim=3072,
-        n_layers=32,
+        dim=2048,
+        n_layers=8,
         n_heads=32,
-        n_kv_heads=32,
+        n_kv_heads=None,
         vocab_size=vocab_size,
-        multiple_of=32,
-        max_seq_length=4096,  # Reduced sequence length
+        multiple_of=256,
+        max_seq_length=512,
         mode='train',
         device=device
     )
@@ -209,14 +195,14 @@ def main():
     print("Model initialized")
     
     # Create dataloaders
-    train_dataloader, val_dataloader, test_dataloader = create_dataloaders(
-        batch_size=4096,  # Reduced batch size
+    train_dataloader, val_dataloader = create_dataloaders(
+        batch_size=32,
         context_length=args.max_seq_length - 1
     )
     
     # Initialize optimizer and scheduler
     optimizer = AdamW(model.parameters(), lr=3e-4, weight_decay=0.1)
-    steps_per_epoch = 1000  # Limit steps per epoch
+    steps_per_epoch = 1000 
     total_steps = steps_per_epoch * 10  # 10 epochs
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
@@ -271,7 +257,7 @@ def main():
         torch.cuda.empty_cache()
     
     # Test final model
-    test_loss = validate(model, test_dataloader, device, max_steps=steps_per_epoch // 5)
+    test_loss = validate(model, val_dataloader, device, max_steps=steps_per_epoch // 5)
     print(f"\nFinal test loss: {test_loss:.4f}")
     wandb.log({"test_loss": test_loss})
     

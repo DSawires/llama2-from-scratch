@@ -1,0 +1,20 @@
+Using device: cuda
+Vocabulary size: 32000
+Model initialized
+Loading dataset...
+Loading tokenizer...
+Creating datasets...
+Starting training...
+
+Epoch 1/10
+Training: 141it [01:00,  2.32it/s, loss=1.03, avg_loss=3.74, lr=0.0003] 
+Traceback (most recent call last):
+  File "/home/user/llama2-from-scratch/train-script.py", line 267, in <module>
+    main()
+  File "/home/user/llama2-from-scratch/train-script.py", line 221, in main
+    train_loss = train_epoch(
+                 ^^^^^^^^^^^^
+  File "/home/user/llama2-from-scratch/train-script.py", line 112, in train_epoch
+    total_loss += loss.item()
+                  ^^^^^^^^^^^
+KeyboardInterrupt

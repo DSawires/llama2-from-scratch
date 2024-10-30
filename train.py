@@ -65,9 +65,9 @@ def save_ds_checkpoint(step, epoch, model, ckpt_id, args, optimizer=None, lr_sch
         client_state = {'step': step, 'epoch': epoch}
         saved_path = model.save_checkpoint(args['save_dir'], ckpt_id, client_state=client_state)
         if saved_path is None:
-            logging.info('Failed to save deepspeed checkpoint.')
+            print('Failed to save deepspeed checkpoint.')
         else:
-            logging.info(f'saved checkpoint to {saved_path}')
+            print(f'saved checkpoint to {saved_path}')
     else:
         checkpoint = {
             'model_state_dict': model.state_dict(),
@@ -80,7 +80,7 @@ def save_ds_checkpoint(step, epoch, model, ckpt_id, args, optimizer=None, lr_sch
         checkpoint_path = f"{args['save_dir']}/checkpoint_{ckpt_id:.2f}.ckpt"
         try:
             torch.save(checkpoint, checkpoint_path)
-            logging.info(f'Checkpoint saved at {checkpoint_path}.')
+            print(f'Checkpoint saved at {checkpoint_path}.')
         except Exception as e:
             print(f'Failed to save checkpoint at {checkpoint_path}. Error: {e}')
 
@@ -155,17 +155,13 @@ def train(model: Transformer, train_config: TrainArgs, train_dataloader: DataLoa
 
     # when loading the model, we start training from where we paused using the same epoch and step that
     # training was paused on.
-    if args['load_model']:
-        start_epoch, start_step = load_checkpoint(model, args, optimizer, scheduler)
-    else:
-        start_epoch, start_step = 0, 0
+    start_epoch, start_step = 0, 0
 
     losses = []
     best_eval_loss = float('inf')
 
     for epoch in tqdm(range(start_epoch, args['n_epochs'])):
         model.train()
-        breakpoint()
         for step, (X, Y) in enumerate(train_dataloader, start=start_step):
             X, Y = X.to(model.device), Y.to(model.device)
             logits, loss = model(X, 0, Y)
@@ -186,7 +182,7 @@ def train(model: Transformer, train_config: TrainArgs, train_dataloader: DataLoa
                                     eval_dataloader=eval_dataloader,
                                     device=args['device'])
                 losses.extend([out])
-                logging.info(
+                print(
                     f'Epoch: {epoch}, Batch: {step + 1}/{len(train_dataloader)} | train_loss: {out["train"]:.2f}, '
                     f'eval_loss: {out["eval"]:.2f}')
 
@@ -195,7 +191,7 @@ def train(model: Transformer, train_config: TrainArgs, train_dataloader: DataLoa
                 if cur_eval_loss < best_eval_loss and step % args['save_interval'] == 0:
                     ckpt_id = loss.item()
                     save_ds_checkpoint(step, epoch, model, ckpt_id, args, optimizer, scheduler)
-                    logging.info(f"New best model saved with eval_loss: {cur_eval_loss:.2f}")
+                    print(f"New best model saved with eval_loss: {cur_eval_loss:.2f}")
     df = pd.DataFrame(losses)
     df.to_pickle(args['save_dir'] + '/losses.pkl')
     return losses

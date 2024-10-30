@@ -1,0 +1,16 @@
+{"time":"2024-10-29T20:13:07.89276973Z","level":"INFO","msg":"using version","core version":"0.18.5"}
+{"time":"2024-10-29T20:13:07.892792918Z","level":"INFO","msg":"created symlink","path":"/home/user/llama2-from-scratch/wandb/run-20241029_201307-tj6205sp/logs/debug-core.log"}
+{"time":"2024-10-29T20:13:07.995644215Z","level":"INFO","msg":"created new stream","id":"tj6205sp"}
+{"time":"2024-10-29T20:13:07.995692825Z","level":"INFO","msg":"stream: started","id":"tj6205sp"}
+{"time":"2024-10-29T20:13:07.995756241Z","level":"INFO","msg":"writer: Do: started","stream_id":{"value":"tj6205sp"}}
+{"time":"2024-10-29T20:13:07.995952078Z","level":"INFO","msg":"handler: started","stream_id":{"value":"tj6205sp"}}
+{"time":"2024-10-29T20:13:07.995983367Z","level":"INFO","msg":"sender: started","stream_id":"tj6205sp"}
+{"time":"2024-10-29T20:13:08.262990872Z","level":"INFO","msg":"Starting system monitor"}
+{"time":"2024-10-29T20:13:42.34220258Z","level":"INFO","msg":"stream: closing","id":"tj6205sp"}
+{"time":"2024-10-29T20:13:42.342239177Z","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2024-10-29T20:13:42.343617016Z","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2024-10-29T20:13:43.139330744Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2024-10-29T20:13:43.345140826Z","level":"INFO","msg":"handler: closed","stream_id":{"value":"tj6205sp"}}
+{"time":"2024-10-29T20:13:43.345193906Z","level":"INFO","msg":"writer: Close: closed","stream_id":{"value":"tj6205sp"}}
+{"time":"2024-10-29T20:13:43.345264027Z","level":"INFO","msg":"sender: closed","stream_id":"tj6205sp"}
+{"time":"2024-10-29T20:13:43.345288332Z","level":"INFO","msg":"stream: closed","id":"tj6205sp"}
